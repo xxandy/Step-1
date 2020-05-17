@@ -3,7 +3,7 @@ with open('dictionary.txt', 'r') as f:
     for line in f:
         originDict.append(line.strip('\n').upper())
 
-TestCase = ['CDRA', 'ABAY', 'DOTG', 'CCOW', 'UDNBREA', '']
+TestCase = ['CDRA', 'ABAY', 'DOTG', 'CCOW', 'UDNBREA', '', 'apple']
 targetDict = {}
 
 for x in originDict:
@@ -26,6 +26,7 @@ def judge(test, tar):
 
 
 for x in TestCase:
+    x = x.upper()
     res = []
     sample = [0] * 26
     for y in x:
