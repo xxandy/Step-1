@@ -1,3 +1,5 @@
+## make anagram be word
+
 originDict = []
 with open('dictionary.txt', 'r') as f:
     for line in f:
