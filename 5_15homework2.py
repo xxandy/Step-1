@@ -24,6 +24,7 @@ def hashToValue(x):
 
 
 def dfs(node, test):
+    ## ALEXREVIEW  similar comment to previous exercise on globals:  better to return a value
     global maxRes
     if maxRes[0] < node.val:
         maxRes = [node.val, hashToWord[node.hash]]
@@ -54,6 +55,9 @@ for x in originDict:
     # use map to make list be string
 
 # create tree
+# ALEXREVIEW please explain the purpose of the tree in our joint review meeting.
+#            This tree takes significant resources to build.  Is it essential for solving the problem?
+#            And does it pay for its cost in lowering computation cost?
 root = TreeNode()
 for key in hashToWord:
     node = root
