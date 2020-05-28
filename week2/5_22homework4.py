@@ -29,6 +29,10 @@ def get(k ,v, start, end):
                     end = deleteNode(end.val[0], end)[1]
     return start, end
 
+# ALEXNOTE: I really like that you chose to add deleteNote as a separate function!
+#           Quick question: is this meant to be called from outside this class?
+#           If not, how could you avoid it?
+
 # k != start.val[0]
 def deleteNode(k, end):
     # if k is the 'end'node, the oldest one.
