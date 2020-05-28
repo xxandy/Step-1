@@ -1,6 +1,9 @@
 import numpy, time
 import matplotlib.pyplot as plt
 
+#ALEXNOTE: you'll want to comment on whether A,B,C are passed by reference ore by value.
+#          -> and in this case, reference is definetely better, and that's python's default
+#            see https://stackoverflow.com/questions/986006/how-do-i-pass-a-variable-by-reference
 def multiple(A,B,C):
     n = len(A)
     if len(A) != n or len(B) != n: return 'Input Error'
@@ -11,6 +14,12 @@ def multiple(A,B,C):
         for j in range(n):
             for k in range(n):
                 C[i][j] += A[i][k] * B[k][j]
+    # ALEXNOTE: return the same parameter you modified is rather unusual.
+    #           it leads to one of two consequences: 
+    #               -> if C is passed by refererence:  the return operation causes unnecessary copying
+    #                  (possibly destroy a temp array just to create a new one with the same value), so
+    #                   better not to return it.
+    #               -> if C is passed by value:  unnecessary copying both in and out.
     return C
 
 # x and y are for the picture.
