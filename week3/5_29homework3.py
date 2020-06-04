@@ -33,6 +33,8 @@ def getNumOrSign(Token, s, i):
 # Do the multiple and divide calculations.
 def mulDivCal(Token):
     # If Token[-1] is a number
+    # ALEXNOTE: I like how you are using the native type of the token to determine its type
+    #           (versus the class template, which had a separate type field in an dictionary entry)
     if isinstance(Token[-1], float):
         # This part of While is for
         # combined + or - to the number if 2 sequent sign appeared like [3,*,-,2], to [3,*,-2]
@@ -67,6 +69,7 @@ def parenCal(Token):
             else:
                 # After we pop the num at line 62, if Token[-1] == '(' means it's the first num after '(' like
                 # [(1+...], so we give the sign '+'
+                # ALEXNOTE: line numbers change. It's not ideal to refer to line numbers in comments.
                 sign = '+'
             if sign not in plusMinus: raise Exception
             val += num if sign == '+' else -num
@@ -95,6 +98,10 @@ passTest = ['1', '1.1', '.1', '- 1.1', '(1+1)', '1.-.1', '+(-(+(-(+1))))', '((((
             '-1.0 + 2 * (- 3.1 415926 + .4) / - (5.+ (-3)  ) + (1.4000) ','-2.2+5*((6-2)*3.1)+1/4']
 errorTest = ['', 'a', '1a', '1+1)', '(1+1', '1*/1', '1/0', '1.1.1', '3(4)', '(3)4', '()', '(+)1', '3*(a1+5)']
 
+# ALEXNOTE: organizing the test cases in must-pass and must-faile is nice.
+#           in the errorTest, how about concatenated operators?  ** ?  // ... etc
+#           how about embedded spaces?  should they pass or fail?
+
 mulDiv = {'*', '/'}
 plusMinus = {'+', '-'}
 
@@ -113,6 +120,10 @@ for s in passTest + errorTest:
         # plusMinusCal: [1.1+40] --> [41.1]
         while i < len(s):
             Token, i = getNumOrSign(Token, s, i)
+            # ALEXNOTE: parenthesis mathematically take precedence over multiplication or division.
+            #           I can't prove it right now, but I think there's cases where the logic below produces incorrect results.
+            #            Also:  a wrapper function for all 3 steps below would be nice.  They are unlikely to be used
+            #            individually, as they are all pieces of a larger program.
             Token = mulDivCal(Token)
             Token = parenCal(Token)
             Token = mulDivCal(Token)
