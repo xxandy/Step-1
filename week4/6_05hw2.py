@@ -92,7 +92,8 @@ for x in idToName:
 print(len(lonely))
 # 417638
 
-
+## use random! It will be funny:)
+## Actually the quantity of "No path" is bigger than what I thought.
 # we use memoPathBfs instead of BFS here, because it use less time and output both True or False and Path.
 nameList = list(nameToId.keys())
 while 1:
