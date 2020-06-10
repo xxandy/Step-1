@@ -93,7 +93,7 @@ print(len(lonely))
 # 417638
 
 
-# we use memoPathBfs instead of BFS here, because
+# we use memoPathBfs instead of BFS here, because it use less time and output both True or False and Path.
 nameList = list(nameToId.keys())
 while 1:
     startName = input('Please input the start:')
