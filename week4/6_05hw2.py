@@ -99,6 +99,7 @@ nameList = list(nameToId.keys())
 while 1:
     startName = input('Please input the start:')
     # You can also use random '-r' to help you pick a random target.
+    # ALEXNOTE:   random was a nice addition!
     if startName == '-r':
         startName = random.choice(nameList)
         print(startName)
