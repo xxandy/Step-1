@@ -58,6 +58,8 @@ with open('nicknames.txt', 'r') as e:
 followRelative = dict()
 noteRelations(followRelative)
 
+
+# ALEXNOTE:  missing a set of test cases to ensure the algorithm works
 startName = 'adrian'
 target = 'jacqueline'
 print(BFS(startName))
