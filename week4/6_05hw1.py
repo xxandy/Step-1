@@ -1,12 +1,16 @@
 
 # note the relationships between IDs.
 def noteRelations(dictionary):
+    # ALEXNOTE:  it makes more sense to pass the filename as a parameter to this function, to make it
+    #             more generic.
     with open('namelinks.txt', 'r') as f:
         for line in f:
             if line.split()[0] in dictionary:
                 dictionary[line.split()[0]].append(line.split()[1])
             else:
                 dictionary[line.split()[0]] = [line.split()[1]]
+            # ALEXNOTE: the dicionary only has ids.   A dictionary linking the elements directly to each other
+            #            would be more efficient.
 
 
 # BFS - search if can startName to target
@@ -56,6 +60,8 @@ with open('nicknames.txt', 'r') as e:
         idToName.append(line.split()[1])
 
 followRelative = dict()
+# ALEXNOTE: since the parameter is purely for output, it may make more sense to make an  return value rather than a parameter.
+#           Parameter sort of implies  either IN  or IN/OUT data transfer
 noteRelations(followRelative)
 
 startName = 'adrian'
