@@ -63,15 +63,14 @@ def insertAtoB(A,B):
         B.insert(nextInsert[0],nextInsert[1])
     return B
 
-def triSquare(a,b,c):
+def isIntersect(a,b,c,d):
     x1,y1 = a
     x2,y2 = b
     x3,y3 = c
-    return abs((x1*y2 - x2*y1) + (x2*y3 - x3*y2) + (x3*y1 - x1*y3)) / 2
+    x4,y4 = d
+    x = (y3*x4*x2 - y4*x3*x2 - y3*x4*x1 + y4*x3*x1 - y1*x2*x4 + y2*x1*x4 + y1*x2*x3 - y2*x1*x3) / x4*y2 - x4*y1 - x3*y2 + x3*y1 - x2*y4 + x2*y3 + x1*y4 - x1*y3
 
-def isIntersect(a,b,c,d):
-    s = triSquare(a,b,c) + triSquare(a,b,d) - triSquare(a,c,d) - triSquare(b,c,d)
-    return True if s == 0 else False
+    return True if x1 < x < x2 else False
 
 def adjustIntersect(result):
     for i in range(n):
@@ -106,19 +105,41 @@ def sequentReinsert(result,m):
                 if score > score1:
                     result = result1
                     score = score1
-    return result, score
+    return result
+
+def twoSequentReinsert(result,m):
+    for i in range(1, n):
+        for j in range(i + 2, min(i + m, n)):
+            for x in range(j + 1, n):
+                for y in range(x + 2, min(x + m, n)):
+                    a, b, c, d, e = result[:i], result[i:j + 1], result[j + 1:x], result[x:y + 1], result[y + 1:]
+                    b1 = insertAtoB(d + b[1:-1], [b[0], b[-1]])
+                    d1 = insertAtoB(b + d[1:-1], [d[0], d[-1]])
+                    result1 = a + c + d1 + e
+                    result2 = a + b1 + c + e
+                    score = totalDistance(result)
+                    score1 = totalDistance(result1)
+                    score2 = totalDistance(result2)
+                    minScore = min(score, score1, score2)
+                    if score1 == minScore: result = result1
+                    if score2 == minScore: result = result2
+    return result
 
 for k in range(7):
 
     tour = read_input('input_'+str(k)+'.csv')
     n = len(tour)
     points = list(range(n))
-    result = createConvexHull(tour)
-    # result = createRandomInit(3)
-    result = insertAtoB(set(points) - set(result), result)
+    inital = createConvexHull(tour)
+    # inital = createRandomInit(3)
+    result = insertAtoB(set(points) - set(inital), inital)
+    print('After Insertion      =',totalDistance(result), result)
     result = adjustIntersect(result)
-    result, score = sequentReinsert(result,10)
-    print(result, score)
+    print('After Swap           =',totalDistance(result), result)
+    result = sequentReinsert(result,10)
+    print('After Re-insertion 1 =',totalDistance(result),result)
+    result = twoSequentReinsert(result, 5)
+    print('After Re-insertion 2 =',totalDistance(result),result)
 
     # name = 'output'
     # with open(f'{name}_{k}.csv', 'w') as f:
