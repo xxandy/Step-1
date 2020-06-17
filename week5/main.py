@@ -6,6 +6,7 @@ def calSlope(a,b):
     x2,y2 = b
     return (y1-y2)/(x1-x2)
 
+# search the up part and down part
 def findConvex(Route,end):
     maxSlope = float('inf')
     unvisited = set(points)
@@ -33,6 +34,7 @@ def totalDistance(result):
         res += distance(tour[result[i]],tour[result[i+1]])
     return res
 
+# create the convexhull
 def createConvexHull(tour):
     leftMost = [0, 9999]
     rightMost = [0, 0]
@@ -49,6 +51,7 @@ def createConvexHull(tour):
 def createRandomInit(m):
     return random.sample(points, m)
 
+# insert A to line segment
 def insertAtoB(A,B):
     A = set(A)
     while A:
@@ -63,6 +66,7 @@ def insertAtoB(A,B):
         B.insert(nextInsert[0],nextInsert[1])
     return B
 
+# search the intersection('s x) of 2 lines(4 point)
 def isIntersect(a,b,c,d):
     x1,y1 = a
     x2,y2 = b
@@ -72,6 +76,7 @@ def isIntersect(a,b,c,d):
 
     return True if x1 < x < x2 else False
 
+# If intersect, change the route
 def adjustIntersect(result):
     for i in range(n):
         a, b = tour[result[i]], tour[result[i + 1]]
@@ -81,23 +86,31 @@ def adjustIntersect(result):
                 result = result[:i + 1] + result[i + 1:j + 1][::-1] + result[j + 1:]
     return result
 
+# Pick 1 to m points, search  if they have better route
+# one by one
 def sequentReinsert(result,m):
     score = totalDistance(result)
 
     for i in range(1, n):
         for j in range(i, min(i+m,n)):
+            # b: list for points to be inserted
+            # a+c: the list to insert points in b.
             a, b, c = result[:i], result[i:j + 1], result[j + 1:]
             result1 = insertAtoB(b, a + c)
             score1 = totalDistance(result1)
+            # if score1(new score(distance)) is smaller
             if score > score1:
                 result = result1
                 score = score1
 
     # change start point
+    # because we didn't test the ID for index-0
+    # we cut the list in half and put the index[0] in the middle.
     result = result[n // 2:] + result[1:n // 2 + 1]
 
     for i in range(1, n):
         for j in range(i, min(i+m,n)):
+            # only run when we test index-0
             if i <= n // 2 <= j:
                 a, b, c = result[:i], result[i:j + 1], result[j + 1:]
                 result1 = insertAtoB(b, a + c)
@@ -107,22 +120,20 @@ def sequentReinsert(result,m):
                     score = score1
     return result
 
+# Pick 1 to m points [2 parts], search  if they have better route
+# one by one
 def twoSequentReinsert(result,m):
+    score = totalDistance(result)
     for i in range(1, n):
-        for j in range(i + 2, min(i + m, n)):
+        for j in range(i, min(i + m, n)):
             for x in range(j + 1, n):
-                for y in range(x + 2, min(x + m, n)):
-                    a, b, c, d, e = result[:i], result[i:j + 1], result[j + 1:x], result[x:y + 1], result[y + 1:]
-                    b1 = insertAtoB(d + b[1:-1], [b[0], b[-1]])
-                    d1 = insertAtoB(b + d[1:-1], [d[0], d[-1]])
-                    result1 = a + c + d1 + e
-                    result2 = a + b1 + c + e
-                    score = totalDistance(result)
+                for y in range(x, min(x + m, n)):
+                    a, b, c, d, e = result[:i], result[i:j + 1], result[j + 1:x], result[x:y + 1],result[y + 1:]
+                    result1 = insertAtoB(b+d,a+c+e)
                     score1 = totalDistance(result1)
-                    score2 = totalDistance(result2)
-                    minScore = min(score, score1, score2)
-                    if score1 == minScore: result = result1
-                    if score2 == minScore: result = result2
+                    if score > score1:
+                        result = result1
+                        score = score1
     return result
 
 for k in range(7):
