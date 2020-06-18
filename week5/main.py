@@ -7,6 +7,8 @@ def calSlope(a,b):
     return (y1-y2)/(x1-x2)
 
 # search the up part and down part
+# both up part and down part could use this function
+# because they both start at the most big slope and become smaller (slope) one by one
 def findConvex(Route,end):
     maxSlope = float('inf')
     unvisited = set(points)
@@ -36,8 +38,10 @@ def totalDistance(result):
 
 # create the convexhull
 def createConvexHull(tour):
+    # [0]:ID [1]: x-coordinate
     leftMost = [0, 9999]
     rightMost = [0, 0]
+    # search the most-left point and most-right point in tour.
     for i in range(len(tour)):
         if tour[i][0] < leftMost[1]:
             leftMost = [i, tour[i][0]]
@@ -152,6 +156,4 @@ for k in range(7):
     result = twoSequentReinsert(result, 5)
     print('After Re-insertion 2 =',totalDistance(result),result)
 
-    # name = 'output'
-    # with open(f'{name}_{k}.csv', 'w') as f:
-    #     f.write(format_tour(result) + '\n')
+
