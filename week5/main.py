@@ -156,4 +156,6 @@ for k in range(7):
     result = twoSequentReinsert(result, 5)
     print('After Re-insertion 2 =',totalDistance(result),result)
 
-
+    # name = 'output'
+    # with open(f'{name}_{k}.csv', 'w') as f:
+    #     f.write(format_tour(result) + '\n')
