@@ -37,6 +37,9 @@ def totalDistance(result):
     return res
 
 # create the convexhull
+# ALEXNOTE: I think this algorithm is really cool!
+#           I am very curious about its performance vs the Greedy Method.
+#           Did you try the greedy method?
 def createConvexHull(tour):
     # [0]:ID [1]: x-coordinate
     leftMost = [0, 9999]
@@ -145,6 +148,10 @@ for k in range(7):
     tour = read_input('input_'+str(k)+'.csv')
     n = len(tour)
     points = list(range(n))
+    
+    # ALEXNOTE: I think it makes sense to create a function that has the rest of the code below,
+    #           so that you have a single entry point to your code, which invokes all the inner
+    #           functions.
     inital = createConvexHull(tour)
     # inital = createRandomInit(3)
     result = insertAtoB(set(points) - set(inital), inital)
