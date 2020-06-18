@@ -125,10 +125,10 @@ def sequentReinsert(result,m):
 def twoSequentReinsert(result,m):
     score = totalDistance(result)
     for i in range(1, n):
-        for j in range(i, min(i + m, n)):
-            for x in range(j + 1, n):
-                for y in range(x, min(x + m, n)):
-                    a, b, c, d, e = result[:i], result[i:j + 1], result[j + 1:x], result[x:y + 1],result[y + 1:]
+        for j in range(i + 1, min(i + m, n)):
+            for x in range(j, n):
+                for y in range(x + 1, min(x + m, n)):
+                    a, b, c, d, e = result[:i], result[i:j], result[j:x], result[x:y],result[y:]
                     result1 = insertAtoB(b+d,a+c+e)
                     score1 = totalDistance(result1)
                     if score > score1:
