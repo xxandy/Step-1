@@ -224,8 +224,7 @@ typedef struct my_heap_t {
     struct my_heap_t* next;
 } my_heap_t;
 
-// Initialize the free lists
-// we only store the free slot no less than the list name
+// Initialize the free lists (global information)
 my_heap_t my_heap;         // do not store any free slots
 my_heap_t my_heap0008;     // store free slots in size 8 ~ 15
 my_heap_t my_heap0016;     // store free slots in size 16 ~ 31
