@@ -224,66 +224,75 @@ typedef struct my_heap_t {
     struct my_heap_t* next;
 } my_heap_t;
 
-// Initialize the free lists (global information)
-my_heap_t my_heap;         // do not store any free slots
-my_heap_t my_heap0008;     // store free slots in size 8 ~ 15
-my_heap_t my_heap0016;     // store free slots in size 16 ~ 31
-my_heap_t my_heap0032;     // store free slots in size 32 ~ 63
-my_heap_t my_heap0064;     // store free slots in size 64 ~ 127
-my_heap_t my_heap0128;     // store free slots in size 128 ~ 255
-my_heap_t my_heap0256;     // store free slots in size 256 ~ 511
-my_heap_t my_heap0512;     // store free slots in size 512 ~ 1023
-my_heap_t my_heap1024;     // store free slots in size 1024 ~ 2047
-my_heap_t my_heap2048;     // store free slots in size 2048 ~ 4095
-my_heap_t my_heap4096;     // only store the new memory region, when using mmap_from_system
+// Initialize the free lists
+my_heap_t my_heap0000;        // only store the new memory region, when using mmap_from_system
+
 
 // This is called only once at the beginning of each challenge.
 // dummy.size is the smallest size of all free slots in the heap
 // my_heap -> my_heap0008 -> my_heap0016 -> ... -> my_heap2048 -> my_heap4096
 void my_initialize() {
-    my_heap.free_head = &my_heap.dummy;
-    my_heap.dummy.size = 1;
-    my_heap.dummy.next = NULL;
-    my_heap0008.free_head = &my_heap0008.dummy;
-    my_heap0008.dummy.size = 8;
-    my_heap0008.dummy.next = NULL;
-    my_heap0016.free_head = &my_heap0016.dummy;
-    my_heap0016.dummy.size = 16;
-    my_heap0016.dummy.next = NULL;
-    my_heap0032.free_head = &my_heap0032.dummy;
-    my_heap0032.dummy.size = 32;
-    my_heap0032.dummy.next = NULL;
-    my_heap0064.free_head = &my_heap0064.dummy;
-    my_heap0064.dummy.size = 64;
-    my_heap0064.dummy.next = NULL;
-    my_heap0128.free_head = &my_heap0128.dummy;
-    my_heap0128.dummy.size = 128;
-    my_heap0128.dummy.next = NULL;
-    my_heap0256.free_head = &my_heap0256.dummy;
-    my_heap0256.dummy.size = 256;
-    my_heap0256.dummy.next = NULL;
-    my_heap0512.free_head = &my_heap0512.dummy;
-    my_heap0512.dummy.size = 512;
-    my_heap0512.dummy.next = NULL;
-    my_heap1024.free_head = &my_heap1024.dummy;
-    my_heap1024.dummy.size = 1024;
-    my_heap1024.dummy.next = NULL;
-    my_heap2048.free_head = &my_heap2048.dummy;
-    my_heap2048.dummy.size = 2048;
-    my_heap2048.dummy.next = NULL;
-    my_heap4096.free_head = &my_heap4096.dummy;
-    my_heap4096.dummy.size = 4096;
-    my_heap4096.dummy.next = NULL;
-    my_heap.next = &my_heap0008;
-    my_heap0008.next = &my_heap0016;
-    my_heap0016.next = &my_heap0032;
-    my_heap0032.next = &my_heap0064;
-    my_heap0064.next = &my_heap0128;
-    my_heap0128.next = &my_heap0256;
-    my_heap0256.next = &my_heap0512;
-    my_heap0512.next = &my_heap1024;
-    my_heap1024.next = &my_heap2048;
-    my_heap2048.next = &my_heap4096;
+    // Init my_heap0000
+    my_heap0000.free_head = &my_heap0000.dummy;
+    my_heap0000.dummy.size = 1;
+    my_heap0000.dummy.next = NULL;
+
+    // Allocate new memory and create other heaps
+    size_t buffer_size = 4096;
+    size_t heap_size = sizeof(my_heap0000);
+    my_heap_t* my_heap0008 = (my_heap_t*)mmap_from_system(buffer_size);                // store free slots in size 8 ~ 15
+    my_heap_t* my_heap0016 = (my_heap_t*)(char*)(my_heap0008+1); // store free slots in size 16 ~ 31
+    my_heap_t* my_heap0032 = (my_heap_t*)(char*)(my_heap0016+1); // store free slots in size 32 ~ 63
+    my_heap_t* my_heap0064 = (my_heap_t*)(char*)(my_heap0032+1); // store free slots in size 64 ~ 127
+    my_heap_t* my_heap0128 = (my_heap_t*)(char*)(my_heap0064+1); // store free slots in size 128 ~ 255
+    my_heap_t* my_heap0256 = (my_heap_t*)(char*)(my_heap0128+1); // store free slots in size 256 ~ 511
+    my_heap_t* my_heap0512 = (my_heap_t*)(char*)(my_heap0256+1); // store free slots in size 512 ~ 1023
+    my_heap_t* my_heap1024 = (my_heap_t*)(char*)(my_heap0512+1); // store free slots in size 1024 ~ 2047
+    my_heap_t* my_heap2048 = (my_heap_t*)(char*)(my_heap1024+1); // store free slots in size 2048 ~ 
+
+    // Add the metadate with new memory region to my_heap0000.
+    my_metadata_t* new_metadata = (my_metadata_t*)(char*)(my_heap2048+1);
+    new_metadata->size = buffer_size - sizeof(my_metadata_t) - sizeof(my_heap_t) * 9;
+    new_metadata->next = NULL;
+    my_heap0000.free_head = new_metadata;
+    
+    // Init other heaps
+    my_heap0008->free_head = &my_heap0008->dummy;
+    my_heap0008->dummy.size = 8;
+    my_heap0008->dummy.next = NULL;
+    my_heap0016->free_head = &my_heap0016->dummy;
+    my_heap0016->dummy.size = 16;
+    my_heap0016->dummy.next = NULL;
+    my_heap0032->free_head = &my_heap0032->dummy;
+    my_heap0032->dummy.size = 32;
+    my_heap0032->dummy.next = NULL;
+    my_heap0064->free_head = &my_heap0064->dummy;
+    my_heap0064->dummy.size = 64;
+    my_heap0064->dummy.next = NULL;
+    my_heap0128->free_head = &my_heap0128->dummy;
+    my_heap0128->dummy.size = 128;
+    my_heap0128->dummy.next = NULL;
+    my_heap0256->free_head = &my_heap0256->dummy;
+    my_heap0256->dummy.size = 256;
+    my_heap0256->dummy.next = NULL;
+    my_heap0512->free_head = &my_heap0512->dummy;
+    my_heap0512->dummy.size = 512;
+    my_heap0512->dummy.next = NULL;
+    my_heap1024->free_head = &my_heap1024->dummy;
+    my_heap1024->dummy.size = 1024;
+    my_heap1024->dummy.next = NULL;
+    my_heap2048->free_head = &my_heap2048->dummy;
+    my_heap2048->dummy.size = 2048;
+    my_heap2048->dummy.next = NULL;
+    my_heap0000.next = my_heap0008;
+    my_heap0008->next = my_heap0016;
+    my_heap0016->next = my_heap0032;
+    my_heap0032->next = my_heap0064;
+    my_heap0064->next = my_heap0128;
+    my_heap0128->next = my_heap0256;
+    my_heap0256->next = my_heap0512;
+    my_heap0512->next = my_heap1024;
+    my_heap1024->next = my_heap2048;
 }
 
 // This is called every time an object is allocated. |size| is guaranteed
@@ -291,9 +300,9 @@ void my_initialize() {
 // allowed to use any library functions other than mmap_from_system /
 // munmap_to_system.
 void* my_malloc(size_t size) {
-    my_heap_t* heap = &my_heap;
+    my_heap_t* heap = &my_heap0000;
     // We want to find the heap which
-    // 1. its size >= request size
+    // 1. its heap size >= size
     // 2. its free_head is not dummy (equals its free_head has next)
     while (heap && (heap->free_head->size < size || !heap->free_head->next)) {
         heap = heap->next;
@@ -302,16 +311,14 @@ void* my_malloc(size_t size) {
     if (!heap) {
         size_t buffer_size = 4096;
         my_metadata_t* metadata = (my_metadata_t*)mmap_from_system(buffer_size);
+        // Add the new memory region to my_heap0000.
         metadata->size = buffer_size - sizeof(my_metadata_t);
-        metadata->next = NULL;
-        // Add the new memory region to my_heap4096.
-        assert(!metadata->next);
-        metadata->next = my_heap4096.free_head;
-        my_heap4096.free_head = metadata;
+        metadata->next = my_heap0000.free_head;
+        my_heap0000.free_head = metadata;
         // Now, try my_malloc() again. This should succeed.
         return my_malloc(size);
     }
-
+   
     my_metadata_t* metadata = heap->free_head;
     // |ptr| is the beginning of the allocated object.
     //
@@ -337,8 +344,8 @@ void* my_malloc(size_t size) {
         new_metadata->size = remaining_size - sizeof(my_metadata_t);
         new_metadata->next = NULL;
         // Find the proper heap and add the metadata to its free_head
-        my_heap_t* new_heap = &my_heap;
-        while (new_heap && new_heap->next->dummy.size <= new_metadata->size) {
+        my_heap_t* new_heap = &my_heap0000;
+        while (new_heap && new_heap->next && new_heap->next->dummy.size <= new_metadata->size) {
             new_heap = new_heap->next;
         }
         assert(!new_metadata->next);
@@ -358,8 +365,8 @@ void my_free(void* ptr) {
     //     metadata   ptr
     my_metadata_t* metadata = (my_metadata_t*)ptr - 1;
     // Find the proper heap and add the metadata to its free_head
-    my_heap_t* new_heap = &my_heap;
-    while (new_heap && new_heap->next->dummy.size <= metadata->size) {
+    my_heap_t* new_heap = &my_heap0000;
+    while (new_heap && new_heap->next && new_heap->next->dummy.size <= metadata->size) {
         new_heap = new_heap->next;
     }
     assert(!metadata->next);
