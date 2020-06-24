@@ -239,10 +239,11 @@ void my_initialize() {
     size_t remaining_size = 0;
     size_t buffer_size = 4096;
     size_t heap_size = sizeof(my_heap_t);
+    size_t delta = 8;
     my_heap_t* heap = &my_heap0000;
     // create heaps
     // if remaining_size is not enough, allocate new memory.
-    for (int i = 8;i <= 4080; i+=8){
+    for (size_t i = 8 ; i <= 4080 ; i += delta){
         my_heap_t* new_heap = remaining_size < heap_size ? (my_heap_t*)mmap_from_system(buffer_size) : (my_heap_t*)(char*)(heap+1);
         remaining_size = remaining_size < heap_size ? buffer_size : remaining_size;
         new_heap->free_head = &new_heap->dummy;
