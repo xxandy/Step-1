@@ -235,20 +235,22 @@ void my_initialize() {
     my_heap0000.free_head = &my_heap0000.dummy;
     my_heap0000.dummy.size = 1;
     my_heap0000.dummy.next = NULL;
-    
+
     size_t remaining_size = 0;
+    size_t buffer_size = 4096;
+    size_t heap_size = sizeof(my_heap_t);
     my_heap_t* heap = &my_heap0000;
     // create heaps
     // if remaining_size is not enough, allocate new memory.
     for (int i = 8;i <= 4080; i+=8){
-        my_heap_t* new_heap = remaining_size < 32 ? (my_heap_t*)mmap_from_system(4096) : (my_heap_t*)(char*)(heap+1);
-        remaining_size = remaining_size < 32 ? 4096 : remaining_size;
+        my_heap_t* new_heap = remaining_size < heap_size ? (my_heap_t*)mmap_from_system(buffer_size) : (my_heap_t*)(char*)(heap+1);
+        remaining_size = remaining_size < heap_size ? buffer_size : remaining_size;
         new_heap->free_head = &new_heap->dummy;
         new_heap->dummy.size = i;
         new_heap->dummy.next = NULL;
         heap->next = new_heap;
         heap = new_heap;
-        remaining_size -= 32;
+        remaining_size -= heap_size;
     }
 }
 
