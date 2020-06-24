@@ -239,7 +239,6 @@ void my_initialize() {
 
     // Allocate new memory and create other heaps
     size_t buffer_size = 4096;
-    size_t heap_size = sizeof(my_heap0000);
     my_heap_t* my_heap0008 = (my_heap_t*)mmap_from_system(buffer_size);                // store free slots in size 8 ~ 15
     my_heap_t* my_heap0016 = (my_heap_t*)(char*)(my_heap0008+1); // store free slots in size 16 ~ 31
     my_heap_t* my_heap0032 = (my_heap_t*)(char*)(my_heap0016+1); // store free slots in size 32 ~ 63
@@ -255,7 +254,7 @@ void my_initialize() {
     new_metadata->size = buffer_size - sizeof(my_metadata_t) - sizeof(my_heap_t) * 9;
     new_metadata->next = NULL;
     my_heap0000.free_head = new_metadata;
-    
+
     // Init other heaps
     my_heap0008->free_head = &my_heap0008->dummy;
     my_heap0008->dummy.size = 8;
@@ -318,7 +317,7 @@ void* my_malloc(size_t size) {
         // Now, try my_malloc() again. This should succeed.
         return my_malloc(size);
     }
-   
+
     my_metadata_t* metadata = heap->free_head;
     // |ptr| is the beginning of the allocated object.
     //
