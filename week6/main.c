@@ -227,7 +227,6 @@ typedef struct my_heap_t {
 // Initialize the free lists
 my_heap_t my_heap0000;        // only store the new memory region, when using mmap_from_system
 
-
 // This is called only once at the beginning of each challenge.
 // dummy.size is the smallest size of all free slots in the heap
 // my_heap -> my_heap0008 -> my_heap0016 -> ... -> my_heap2048 -> my_heap4096
@@ -236,62 +235,21 @@ void my_initialize() {
     my_heap0000.free_head = &my_heap0000.dummy;
     my_heap0000.dummy.size = 1;
     my_heap0000.dummy.next = NULL;
-
-    // Allocate new memory and create other heaps
-    size_t buffer_size = 4096;
-    my_heap_t* my_heap0008 = (my_heap_t*)mmap_from_system(buffer_size);                // store free slots in size 8 ~ 15
-    my_heap_t* my_heap0016 = (my_heap_t*)(char*)(my_heap0008+1); // store free slots in size 16 ~ 31
-    my_heap_t* my_heap0032 = (my_heap_t*)(char*)(my_heap0016+1); // store free slots in size 32 ~ 63
-    my_heap_t* my_heap0064 = (my_heap_t*)(char*)(my_heap0032+1); // store free slots in size 64 ~ 127
-    my_heap_t* my_heap0128 = (my_heap_t*)(char*)(my_heap0064+1); // store free slots in size 128 ~ 255
-    my_heap_t* my_heap0256 = (my_heap_t*)(char*)(my_heap0128+1); // store free slots in size 256 ~ 511
-    my_heap_t* my_heap0512 = (my_heap_t*)(char*)(my_heap0256+1); // store free slots in size 512 ~ 1023
-    my_heap_t* my_heap1024 = (my_heap_t*)(char*)(my_heap0512+1); // store free slots in size 1024 ~ 2047
-    my_heap_t* my_heap2048 = (my_heap_t*)(char*)(my_heap1024+1); // store free slots in size 2048 ~ 
-
-    // Add the metadate with new memory region to my_heap0000.
-    my_metadata_t* new_metadata = (my_metadata_t*)(char*)(my_heap2048+1);
-    new_metadata->size = buffer_size - sizeof(my_metadata_t) - sizeof(my_heap_t) * 9;
-    new_metadata->next = NULL;
-    my_heap0000.free_head = new_metadata;
-
-    // Init other heaps
-    my_heap0008->free_head = &my_heap0008->dummy;
-    my_heap0008->dummy.size = 8;
-    my_heap0008->dummy.next = NULL;
-    my_heap0016->free_head = &my_heap0016->dummy;
-    my_heap0016->dummy.size = 16;
-    my_heap0016->dummy.next = NULL;
-    my_heap0032->free_head = &my_heap0032->dummy;
-    my_heap0032->dummy.size = 32;
-    my_heap0032->dummy.next = NULL;
-    my_heap0064->free_head = &my_heap0064->dummy;
-    my_heap0064->dummy.size = 64;
-    my_heap0064->dummy.next = NULL;
-    my_heap0128->free_head = &my_heap0128->dummy;
-    my_heap0128->dummy.size = 128;
-    my_heap0128->dummy.next = NULL;
-    my_heap0256->free_head = &my_heap0256->dummy;
-    my_heap0256->dummy.size = 256;
-    my_heap0256->dummy.next = NULL;
-    my_heap0512->free_head = &my_heap0512->dummy;
-    my_heap0512->dummy.size = 512;
-    my_heap0512->dummy.next = NULL;
-    my_heap1024->free_head = &my_heap1024->dummy;
-    my_heap1024->dummy.size = 1024;
-    my_heap1024->dummy.next = NULL;
-    my_heap2048->free_head = &my_heap2048->dummy;
-    my_heap2048->dummy.size = 2048;
-    my_heap2048->dummy.next = NULL;
-    my_heap0000.next = my_heap0008;
-    my_heap0008->next = my_heap0016;
-    my_heap0016->next = my_heap0032;
-    my_heap0032->next = my_heap0064;
-    my_heap0064->next = my_heap0128;
-    my_heap0128->next = my_heap0256;
-    my_heap0256->next = my_heap0512;
-    my_heap0512->next = my_heap1024;
-    my_heap1024->next = my_heap2048;
+    
+    size_t remaining_size = 0;
+    my_heap_t* heap = &my_heap0000;
+    // create heaps
+    // if remaining_size is not enough, allocate new memory.
+    for (int i = 8;i <= 4080; i+=8){
+        my_heap_t* new_heap = remaining_size < 32 ? (my_heap_t*)mmap_from_system(4096) : (my_heap_t*)(char*)(heap+1);
+        remaining_size = remaining_size < 32 ? 4096 : remaining_size;
+        new_heap->free_head = &new_heap->dummy;
+        new_heap->dummy.size = i;
+        new_heap->dummy.next = NULL;
+        heap->next = new_heap;
+        heap = new_heap;
+        remaining_size -= 32;
+    }
 }
 
 // This is called every time an object is allocated. |size| is guaranteed
@@ -326,7 +284,7 @@ void* my_malloc(size_t size) {
     //     metadata   ptr
     void* ptr = metadata + 1;
     size_t remaining_size = metadata->size - size;
-    metadata->size = size;
+    metadata->size = remaining_size >= sizeof(my_metadata_t) + 8 ? size : metadata->size;
     // Remove the free slot from the free list.
     heap->free_head = metadata->next;
     metadata->next = NULL;
