@@ -228,7 +228,7 @@ typedef struct my_heap_t {
 const size_t delta = 8;
 const size_t buffer_size = 4096;
 my_heap_t my_heap0000;        // only store the new memory region, when using mmap_from_system
-my_heap_t* heaps[4096];       // list to store heaps
+my_heap_t* heaps[512];       // list to store heaps
 
 // This is called only once at the beginning of each challenge.
 // dummy.size is the smallest size of all free slots in the heap
@@ -254,7 +254,7 @@ void my_initialize() {
         heap = new_heap;
         remaining_size -= heap_size;
     }
-    // add memory for heaps[]
+    // add memory for heaps[512]
     mmap_from_system(buffer_size);
 }
 
@@ -497,10 +497,10 @@ void run_challenge(size_t min_size,
     for (int i = 0; i < epochs_per_cycle + 1; i++) {
         objects[i] = vector_create();
     }
-    initialize_func();
     stats.mmap_size = stats.munmap_size = 0;
     stats.allocated_size = stats.freed_size = 0;
     stats.begin_time = get_time();
+    initialize_func(); // move init to this and can add the allocated size for init
     for (int cycle = 0; cycle < cycles; cycle++) {
         for (int epoch = 0; epoch < epochs_per_cycle; epoch++) {
             size_t allocated = 0;
