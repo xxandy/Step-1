@@ -226,6 +226,8 @@ typedef struct my_heap_t {
 
 // Initialize the free lists
 my_heap_t my_heap0000;        // only store the new memory region, when using mmap_from_system
+my_heap_t* heaps[512];       // size = 4096
+size_t delta = 8;
 
 // This is called only once at the beginning of each challenge.
 // dummy.size is the smallest size of all free slots in the heap
@@ -235,16 +237,15 @@ void my_initialize() {
     my_heap0000.free_head = &my_heap0000.dummy;
     my_heap0000.dummy.size = 1;
     my_heap0000.dummy.next = NULL;
-
     size_t remaining_size = 0;
     size_t buffer_size = 4096;
     size_t heap_size = sizeof(my_heap_t);
-    size_t delta = 8;
     my_heap_t* heap = &my_heap0000;
     // create heaps
     // if remaining_size is not enough, allocate new memory.
-    for (size_t i = 8 ; i <= 4080 ; i += delta){
+    for (size_t i = 0 ; i <= 4080 ; i += delta){
         my_heap_t* new_heap = remaining_size < heap_size ? (my_heap_t*)mmap_from_system(buffer_size) : (my_heap_t*)(char*)(heap+1);
+        heaps[i/delta] = new_heap;
         remaining_size = remaining_size < heap_size ? buffer_size : remaining_size;
         new_heap->free_head = &new_heap->dummy;
         new_heap->dummy.size = i;
@@ -253,6 +254,8 @@ void my_initialize() {
         heap = new_heap;
         remaining_size -= heap_size;
     }
+    // add memory for heaps[512]
+    mmap_from_system(buffer_size);
 }
 
 // This is called every time an object is allocated. |size| is guaranteed
@@ -261,6 +264,7 @@ void my_initialize() {
 // munmap_to_system.
 void* my_malloc(size_t size) {
     my_heap_t* heap = &my_heap0000;
+    if (!heap->free_head->next){heap = heaps[size/delta];}
     // We want to find the heap which
     // 1. its heap size >= size
     // 2. its free_head is not dummy (equals its free_head has next)
@@ -304,10 +308,7 @@ void* my_malloc(size_t size) {
         new_metadata->size = remaining_size - sizeof(my_metadata_t);
         new_metadata->next = NULL;
         // Find the proper heap and add the metadata to its free_head
-        my_heap_t* new_heap = &my_heap0000;
-        while (new_heap && new_heap->next && new_heap->next->dummy.size <= new_metadata->size) {
-            new_heap = new_heap->next;
-        }
+        my_heap_t* new_heap = heaps[new_metadata->size/delta];
         assert(!new_metadata->next);
         new_metadata->next = new_heap->free_head;
         new_heap->free_head = new_metadata;
@@ -325,10 +326,7 @@ void my_free(void* ptr) {
     //     metadata   ptr
     my_metadata_t* metadata = (my_metadata_t*)ptr - 1;
     // Find the proper heap and add the metadata to its free_head
-    my_heap_t* new_heap = &my_heap0000;
-    while (new_heap && new_heap->next && new_heap->next->dummy.size <= metadata->size) {
-        new_heap = new_heap->next;
-    }
+    my_heap_t* new_heap = heaps[metadata->size/delta];
     assert(!metadata->next);
     metadata->next = new_heap->free_head;
     new_heap->free_head = metadata;
@@ -344,12 +342,12 @@ void my_free(void* ptr) {
 void test() {
     my_initialize();
     for (int i = 0; i < 100; i++) {
-        void* ptr = my_malloc(96);
+        void* ptr = my_malloc(40*i);
         my_free(ptr);
     }
     void* ptrs[100];
     for (int i = 0; i < 100; i++) {
-        ptrs[i] = my_malloc(96);
+        ptrs[i] = my_malloc(40*i);
     }
     for (int i = 0; i < 100; i++) {
         my_free(ptrs[i]);
