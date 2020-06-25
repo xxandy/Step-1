@@ -225,9 +225,10 @@ typedef struct my_heap_t {
 } my_heap_t;
 
 // Initialize the free lists
+const size_t delta = 24;
+const size_t buffer_size = 4096;
 my_heap_t my_heap0000;        // only store the new memory region, when using mmap_from_system
-my_heap_t* heaps[512];       // size = 4096
-size_t delta = 8;
+my_heap_t* heaps[4096];       // list to store heaps
 
 // This is called only once at the beginning of each challenge.
 // dummy.size is the smallest size of all free slots in the heap
@@ -238,10 +239,9 @@ void my_initialize() {
     my_heap0000.dummy.size = 1;
     my_heap0000.dummy.next = NULL;
     size_t remaining_size = 0;
-    size_t buffer_size = 4096;
     size_t heap_size = sizeof(my_heap_t);
     my_heap_t* heap = &my_heap0000;
-    // create heaps
+    // create heaps, linked them and put into heaps[]
     // if remaining_size is not enough, allocate new memory.
     for (size_t i = 0 ; i <= 4080 ; i += delta){
         my_heap_t* new_heap = remaining_size < heap_size ? (my_heap_t*)mmap_from_system(buffer_size) : (my_heap_t*)(char*)(heap+1);
@@ -254,7 +254,7 @@ void my_initialize() {
         heap = new_heap;
         remaining_size -= heap_size;
     }
-    // add memory for heaps[512]
+    // add memory for heaps[]
     mmap_from_system(buffer_size);
 }
 
@@ -264,10 +264,9 @@ void my_initialize() {
 // munmap_to_system.
 void* my_malloc(size_t size) {
     my_heap_t* heap = &my_heap0000;
+    // Find my_heap0000, if vacant, goto the proper heap
     if (!heap->free_head->next){heap = heaps[size/delta];}
-    // We want to find the heap which
-    // 1. its heap size >= size
-    // 2. its free_head is not dummy (equals its free_head has next)
+    // Find the heap whose free_head is not dummy (equals its free_head has next)
     while (heap && (heap->free_head->size < size || !heap->free_head->next)) {
         heap = heap->next;
     }
@@ -291,6 +290,8 @@ void* my_malloc(size_t size) {
     //     metadata   ptr
     void* ptr = metadata + 1;
     size_t remaining_size = metadata->size - size;
+    // If remaining_size is enough for a new MetaData, size = object size
+    // If remaining_size is not enough, size = metadata->size
     metadata->size = remaining_size >= sizeof(my_metadata_t) + 8 ? size : metadata->size;
     // Remove the free slot from the free list.
     heap->free_head = metadata->next;
