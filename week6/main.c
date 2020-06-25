@@ -229,6 +229,8 @@ const size_t delta = 8;
 const size_t buffer_size = 4096;
 my_heap_t my_heap0000;        // only store the new memory region, when using mmap_from_system
 my_heap_t* heaps[512];       // list to store heaps
+// ALEXNOTE: I thought this was a great strategy:  but I wonder what the impact is on overall memory consumption
+//           especially when large amounts of memory are allocated and then MOSTLY freed.
 
 // This is called only once at the beginning of each challenge.
 // dummy.size is the smallest size of all free slots in the heap
@@ -274,6 +276,7 @@ void* my_malloc(size_t size) {
     if (!heap) {
         size_t buffer_size = 4096;
         my_metadata_t* metadata = (my_metadata_t*)mmap_from_system(buffer_size);
+        // ALEXNOTE: no error checking (I know, the sample code was like that too)
         // Add the new memory region to my_heap0000.
         metadata->size = buffer_size - sizeof(my_metadata_t);
         metadata->next = my_heap0000.free_head;
