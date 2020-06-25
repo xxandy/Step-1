@@ -225,7 +225,7 @@ typedef struct my_heap_t {
 } my_heap_t;
 
 // Initialize the free lists
-const size_t delta = 24;
+const size_t delta = 8;
 const size_t buffer_size = 4096;
 my_heap_t my_heap0000;        // only store the new memory region, when using mmap_from_system
 my_heap_t* heaps[4096];       // list to store heaps
