@@ -2,6 +2,9 @@ from common import read_input
 import math,random
 from collections import defaultdict
 
+# ALEXNOTE: I am curious about which areas changed from before. Hoping you'll walk us through it during our meeting time.
+#            Also, since C++ is so much faster, have you considered rewriting in C++?
+
 def calSlope(a,b):
     x1,y1 = a
     x2,y2 = b
@@ -29,6 +32,7 @@ def findConvex(Route,end):
     return Route
 
 def distance(a, b):
+    # ALEXNOTE: have you considered caching results?  If some number combinations are frequently used...
     return math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
 
 def totalDistance(result):
